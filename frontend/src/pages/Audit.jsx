@@ -1,6 +1,7 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { generateAudit } from "../utils/auditEngine"
+import { toolPlans } from "../data/toolPlans"
 
 
 function Audit() {
@@ -8,14 +9,28 @@ function Audit() {
 
   const navigate = useNavigate()
 
-  const [formData, setFormData] = useState({
-    tool: "ChatGPT",
-    plan: "",
-    spend: "",
-    seats: "",
-    teamSize: "",
-    useCase: "Coding",
-  })
+  const [formData, setFormData] = useState(() => {
+  const savedData = localStorage.getItem("auditForm")
+
+  return savedData
+    ? JSON.parse(savedData)
+    : {
+        tool: "ChatGPT",
+        plan: "",
+        spend: "",
+        seats: "",
+        teamSize: "",
+        useCase: "Coding",
+      }
+})
+
+
+  useEffect(() => {
+    localStorage.setItem(
+      "auditForm",
+      JSON.stringify(formData)
+    )
+  }, [formData])
 
   const handleChange = (e) => {
     setFormData({
@@ -80,14 +95,20 @@ function Audit() {
               Current Plan
             </label>
 
-            <input
-              type="text"
+            <select
               name="plan"
               value={formData.plan}
               onChange={handleChange}
-              placeholder="e.g. Team"
               className="w-full bg-black border border-white/10 rounded-xl p-3"
-            />
+            >
+              <option value="">Select Plan</option>
+
+              {toolPlans[formData.tool].map((plan) => (
+                <option key={plan} value={plan}>
+                  {plan}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Monthly Spend */}
