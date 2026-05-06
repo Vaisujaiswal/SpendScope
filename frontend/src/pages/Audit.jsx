@@ -1,9 +1,49 @@
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { generateAudit } from "../utils/auditEngine"
+
+
 function Audit() {
+
+
+  const navigate = useNavigate()
+
+  const [formData, setFormData] = useState({
+    tool: "ChatGPT",
+    plan: "",
+    spend: "",
+    seats: "",
+    teamSize: "",
+    useCase: "Coding",
+  })
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    })
+  }
+
+  const handleSubmit = () => {
+    const result = generateAudit({
+      ...formData,
+      seats: Number(formData.seats),
+    })
+
+    navigate("/results", {
+      state: {
+        result,
+        formData,
+      },
+    })
+  }
+
+
   return (
     <div className="min-h-screen bg-black text-white px-6 py-12">
-      
+
       <div className="max-w-3xl mx-auto">
-        
+
         <h1 className="text-4xl font-bold mb-3">
           AI Spend Audit
         </h1>
@@ -13,14 +53,19 @@ function Audit() {
         </p>
 
         <div className="bg-zinc-900 border border-white/10 rounded-2xl p-8 space-y-6">
-          
+
           {/* Tool */}
           <div>
             <label className="block mb-2 text-sm text-gray-300">
               AI Tool
             </label>
 
-            <select className="w-full bg-black border border-white/10 rounded-xl p-3">
+            <select
+              name="tool"
+              value={formData.tool}
+              onChange={handleChange}
+              className="w-full bg-black border border-white/10 rounded-xl p-3"
+            >
               <option>ChatGPT</option>
               <option>Claude</option>
               <option>Cursor</option>
@@ -37,6 +82,9 @@ function Audit() {
 
             <input
               type="text"
+              name="plan"
+              value={formData.plan}
+              onChange={handleChange}
               placeholder="e.g. Team"
               className="w-full bg-black border border-white/10 rounded-xl p-3"
             />
@@ -50,6 +98,9 @@ function Audit() {
 
             <input
               type="number"
+              name="spend"
+              value={formData.spend}
+              onChange={handleChange}
               placeholder="100"
               className="w-full bg-black border border-white/10 rounded-xl p-3"
             />
@@ -63,6 +114,9 @@ function Audit() {
 
             <input
               type="number"
+              name="seats"
+              value={formData.seats}
+              onChange={handleChange}
               placeholder="5"
               className="w-full bg-black border border-white/10 rounded-xl p-3"
             />
@@ -76,6 +130,9 @@ function Audit() {
 
             <input
               type="number"
+              name="teamSize"
+              value={formData.teamSize}
+              onChange={handleChange}
               placeholder="10"
               className="w-full bg-black border border-white/10 rounded-xl p-3"
             />
@@ -87,7 +144,12 @@ function Audit() {
               Primary Use Case
             </label>
 
-            <select className="w-full bg-black border border-white/10 rounded-xl p-3">
+            <select
+              name="useCase"
+              value={formData.useCase}
+              onChange={handleChange}
+              className="w-full bg-black border border-white/10 rounded-xl p-3"
+            >
               <option>Coding</option>
               <option>Writing</option>
               <option>Research</option>
@@ -96,7 +158,10 @@ function Audit() {
             </select>
           </div>
 
-          <button className="w-full bg-white text-black py-3 rounded-xl font-semibold hover:scale-[1.01] transition">
+          <button
+            onClick={handleSubmit}
+            className="w-full bg-white text-black py-3 rounded-xl font-semibold"
+          >
             Generate Audit
           </button>
 
