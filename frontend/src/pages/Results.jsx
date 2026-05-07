@@ -1,9 +1,85 @@
 import { useLocation, Link } from "react-router-dom"
+import { useEffect, useState } from "react"
+import axios from "axios"
+import { supabase } from "../services/supabase"
 
 function Results() {
   const location = useLocation()
+  const [summary, setSummary] = useState("")
+  const [loading, setLoading] = useState(true)
+
+  const [leadData, setLeadData] = useState({
+    email: "",
+    company: "",
+    role: "",
+  })
 
   const { result, formData } = location.state || {}
+
+  const handleLeadChange = (e) => {
+    setLeadData({
+      ...leadData,
+      [e.target.name]: e.target.value,
+    })
+  }
+
+  const saveLead = async () => {
+
+    console.log(result)
+
+    const { error } = await supabase
+      .from("leads")
+      .insert([
+        {
+          email: leadData.email,
+          company: leadData.company,
+          role: leadData.role,
+          tool: formData.tool,
+          savings: result.savings,
+        },
+      ])
+
+    if (error) {
+      console.log(error)
+      return
+    }
+
+    alert("Lead saved successfully!")
+  }
+
+  useEffect(() => {
+
+    async function fetchSummary() {
+      try {
+
+        const response = await axios.post(
+          "http://localhost:5000/generate-summary",
+          {
+            tool: formData.tool,
+            plan: formData.plan,
+            seats: formData.seats,
+            teamSize: formData.teamSize,
+            recommendation: result.recommendation,
+            savings: result.savings,
+          }
+        )
+
+        setSummary(response.data.summary)
+
+      } catch (error) {
+
+        setSummary(
+          "Unable to generate personalized summary at the moment."
+        )
+
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSummary()
+
+  }, [])
 
   if (!result) {
     return (
@@ -20,7 +96,7 @@ function Results() {
 
         {/* Header */}
         <div className="text-center mb-12">
-          
+
           <p className="text-green-400 font-medium mb-3">
             Audit Completed
           </p>
@@ -38,7 +114,7 @@ function Results() {
         <div className="bg-zinc-900 border border-white/10 rounded-3xl p-8 mb-8">
 
           <div className="flex items-center justify-between mb-8">
-            
+
             <div>
               <p className="text-gray-400 mb-2">
                 Current Tool
@@ -62,7 +138,7 @@ function Results() {
 
           {/* Recommendation */}
           <div className="border border-green-500/20 bg-green-500/10 rounded-2xl p-6">
-            
+
             <p className="text-green-400 font-medium mb-3">
               Recommended Action
             </p>
@@ -74,6 +150,69 @@ function Results() {
             <p className="text-gray-300">{result.reason}</p>
           </div>
 
+        </div>
+
+        <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 mt-8">
+
+          <p className="text-gray-400 mb-3">
+            AI Generated Summary
+          </p>
+
+          {loading ? (
+            <p className="text-gray-500">
+              Generating summary...
+            </p>
+          ) : (
+            <p className="text-gray-300 leading-7">
+              {summary}
+            </p>
+          )}
+
+        </div>
+
+        <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 mt-8">
+
+          <h2 className="text-2xl font-bold mb-6">
+            Get Full Audit Report
+          </h2>
+
+          <div className="space-y-4">
+
+            <input
+              type="email"
+              name="email"
+              value={leadData.email}
+              onChange={handleLeadChange}
+              placeholder="Email address"
+              className="w-full bg-black border border-white/10 rounded-xl p-3"
+            />
+
+            <input
+              type="text"
+              name="company"
+              value={leadData.company}
+              onChange={handleLeadChange}
+              placeholder="Company name (optional)"
+              className="w-full bg-black border border-white/10 rounded-xl p-3"
+            />
+
+            <input
+              type="text"
+              name="role"
+              value={leadData.role}
+              onChange={handleLeadChange}
+              placeholder="Role (optional)"
+              className="w-full bg-black border border-white/10 rounded-xl p-3"
+            />
+
+            <button
+              onClick={saveLead}
+              className="w-full bg-white text-black py-3 rounded-xl font-semibold"
+            >
+              Save Report
+            </button>
+
+          </div>
         </div>
 
         {/* Stats */}
@@ -103,7 +242,7 @@ function Results() {
 
         {/* CTA */}
         <div className="text-center">
-          
+
           <button className="bg-white text-black px-8 py-4 rounded-2xl font-semibold hover:scale-105 transition">
             Email Full Report
           </button>
