@@ -71,9 +71,7 @@ function Results() {
               {result.recommendation}
             </h3>
 
-            <p className="text-gray-300">
-              Based on your current seat count and usage profile, your team may be overpaying for features that are typically useful at larger scale.
-            </p>
+            <p className="text-gray-300">{result.reason}</p>
           </div>
 
         </div>
