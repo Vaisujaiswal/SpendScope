@@ -1,20 +1,19 @@
-import { useLocation, Link } from "react-router-dom"
+import { useParams, Link } from "react-router-dom"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { supabase } from "../services/supabase"
 
 function Results() {
-  const location = useLocation()
+  const { id } = useParams()
   const [summary, setSummary] = useState("")
   const [loading, setLoading] = useState(true)
+  const [auditData, setAuditData] = useState(null)
 
   const [leadData, setLeadData] = useState({
     email: "",
     company: "",
     role: "",
   })
-
-  const { result, formData } = location.state || {}
 
   const handleLeadChange = (e) => {
     setLeadData({
@@ -25,8 +24,6 @@ function Results() {
 
   const saveLead = async () => {
 
-    console.log(result)
-
     const { error } = await supabase
       .from("leads")
       .insert([
@@ -34,8 +31,8 @@ function Results() {
           email: leadData.email,
           company: leadData.company,
           role: leadData.role,
-          tool: formData.tool,
-          savings: result.savings,
+          tool: auditData?.tool,
+          savings: auditData?.savings,
         },
       ])
 
@@ -49,18 +46,40 @@ function Results() {
 
   useEffect(() => {
 
+    async function fetchAudit() {
+
+      const { data, error } = await supabase
+        .from("audits")
+        .select("*")
+        .eq("id", id)
+        .single()
+
+      if (error) {
+        console.log(error)
+        return
+      }
+
+      setAuditData(data)
+    }
+
+    fetchAudit()
+
+  }, [id])
+
+  useEffect(() => {
+
     async function fetchSummary() {
       try {
 
         const response = await axios.post(
           "http://localhost:5000/generate-summary",
           {
-            tool: formData.tool,
-            plan: formData.plan,
-            seats: formData.seats,
-            teamSize: formData.teamSize,
-            recommendation: result.recommendation,
-            savings: result.savings,
+            tool: auditData?.tool,
+            plan: auditData?.plan,
+            seats: auditData?.seats,
+            teamSize: auditData?.team_size,
+            recommendation: auditData?.recommendation,
+            savings: auditData?.savings,
           }
         )
 
@@ -79,12 +98,30 @@ function Results() {
 
     fetchSummary()
 
-  }, [])
+  }, [auditData])
 
-  if (!result) {
+  if (!auditData) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <h1>No audit data found</h1>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
+
+        <div className="bg-zinc-900 border border-white/10 rounded-3xl p-10 text-center max-w-lg">
+
+          <h1 className="text-4xl font-bold mb-4">
+            Audit Not Found
+          </h1>
+
+          <p className="text-gray-400 mb-8">
+            This audit report may have been deleted or the link is invalid.
+          </p>
+
+          <Link
+            to="/audit"
+            className="bg-white text-black px-6 py-3 rounded-xl font-semibold"
+          >
+            Run New Audit
+          </Link>
+
+        </div>
       </div>
     )
   }
@@ -102,11 +139,11 @@ function Results() {
           </p>
 
           <h1 className="text-6xl font-bold mb-4">
-            Save ${result.savings}/mo
+            Save ${auditData?.savings}/mo
           </h1>
 
           <p className="text-gray-400 text-lg">
-            Potential annual savings of ${result.annualSavings}
+            Potential annual savings of ${auditData?.annual_savings}
           </p>
         </div>
 
@@ -121,7 +158,7 @@ function Results() {
               </p>
 
               <h2 className="text-3xl font-bold">
-                {formData.tool}
+                {auditData?.tool}
               </h2>
             </div>
 
@@ -131,7 +168,7 @@ function Results() {
               </p>
 
               <h2 className="text-2xl font-semibold">
-                {formData.plan}
+                {auditData?.plan}
               </h2>
             </div>
           </div>
@@ -144,10 +181,10 @@ function Results() {
             </p>
 
             <h3 className="text-2xl font-bold mb-3">
-              {result.recommendation}
+              {auditData?.recommendation}
             </h3>
 
-            <p className="text-gray-300">{result.reason}</p>
+            <p className="text-gray-300">{auditData?.reason}</p>
           </div>
 
         </div>
@@ -224,7 +261,7 @@ function Results() {
             </p>
 
             <h2 className="text-4xl font-bold text-green-400">
-              ${result.savings}
+              ${auditData?.savings}
             </h2>
           </div>
 
@@ -234,7 +271,7 @@ function Results() {
             </p>
 
             <h2 className="text-4xl font-bold text-green-400">
-              ${result.annualSavings}
+              ${auditData?.annual_savings}
             </h2>
           </div>
 
@@ -256,6 +293,16 @@ function Results() {
             </Link>
           </div>
         </div>
+
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(window.location.href)
+            alert("Link copied!")
+          }}
+          className="bg-zinc-800 border border-white/10 px-6 py-3 rounded-xl"
+        >
+          Copy Share Link
+        </button>
 
       </div>
     </div>

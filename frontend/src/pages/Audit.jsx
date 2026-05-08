@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { generateAudit } from "../utils/auditEngine"
 import { toolPlans } from "../data/toolPlans"
+import { supabase } from "../services/supabase"
 
 
 function Audit() {
@@ -10,11 +11,11 @@ function Audit() {
   const navigate = useNavigate()
 
   const [formData, setFormData] = useState(() => {
-  const savedData = localStorage.getItem("auditForm")
+    const savedData = localStorage.getItem("auditForm")
 
-  return savedData
-    ? JSON.parse(savedData)
-    : {
+    return savedData
+      ? JSON.parse(savedData)
+      : {
         tool: "ChatGPT",
         plan: "",
         spend: "",
@@ -22,7 +23,9 @@ function Audit() {
         teamSize: "",
         useCase: "Coding",
       }
-})
+  })
+
+  const [submitting, setSubmitting] = useState(false)
 
 
   useEffect(() => {
@@ -39,18 +42,47 @@ function Audit() {
     })
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+
+    if (!formData.plan || !formData.seats) {
+      alert("Please complete all required fields")
+      return
+    }
+
+    setSubmitting(true)
+
     const result = generateAudit({
       ...formData,
       seats: Number(formData.seats),
+      teamSize: Number(formData.teamSize),
     })
 
-    navigate("/results", {
-      state: {
-        result,
-        formData,
-      },
-    })
+    const { data, error } = await supabase
+      .from("audits")
+      .insert([
+        {
+          tool: formData.tool,
+          plan: formData.plan,
+          seats: Number(formData.seats),
+          team_size: Number(formData.teamSize),
+          recommendation: result.recommendation,
+          savings: result.savings,
+          annual_savings: result.annualSavings,
+          reason: result.reason,
+        },
+      ])
+      .select()
+
+    setSubmitting(false)
+
+    if (error) {
+      console.log(error)
+      return
+    }
+
+    const auditId = data[0].id
+
+    navigate(`/results/${auditId}`)
   }
 
 
@@ -181,9 +213,10 @@ function Audit() {
 
           <button
             onClick={handleSubmit}
+            disabled={submitting}
             className="w-full bg-white text-black py-3 rounded-xl font-semibold"
           >
-            Generate Audit
+            {submitting ? "Generating..." : "Generate Audit"}
           </button>
 
         </div>
