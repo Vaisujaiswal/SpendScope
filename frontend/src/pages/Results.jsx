@@ -72,7 +72,7 @@ function Results() {
       try {
 
         const response = await axios.post(
-          "http://localhost:5000/generate-summary",
+          "https://spendscope-u9ag.onrender.com/generate-summary",
           {
             tool: auditData?.tool,
             plan: auditData?.plan,
