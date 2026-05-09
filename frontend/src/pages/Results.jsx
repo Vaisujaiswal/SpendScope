@@ -1,19 +1,50 @@
 import { useParams, Link } from "react-router-dom"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import axios from "axios"
 import { supabase } from "../services/supabase"
+import jsPDF from "jspdf"
+import html2canvas from "html2canvas"
 
 function Results() {
   const { id } = useParams()
   const [summary, setSummary] = useState("")
   const [loading, setLoading] = useState(true)
   const [auditData, setAuditData] = useState(null)
+  const reportRef = useRef()
 
   const [leadData, setLeadData] = useState({
     email: "",
     company: "",
     role: "",
   })
+
+  const downloadPDF = async () => {
+
+    const element = reportRef.current
+
+    const canvas = await html2canvas(element)
+
+    const data = canvas.toDataURL("image/png")
+
+    const pdf = new jsPDF("p", "mm", "a4")
+
+    const imgWidth = 210
+    const pageHeight = 295
+
+    const imgHeight =
+      (canvas.height * imgWidth) / canvas.width
+
+    pdf.addImage(
+      data,
+      "PNG",
+      0,
+      0,
+      imgWidth,
+      imgHeight
+    )
+
+    pdf.save("spendscope-audit-report.pdf")
+  }
 
   const handleLeadChange = (e) => {
     setLeadData({
@@ -127,9 +158,9 @@ function Results() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black text-white px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black text-white px-4 md:px-6 py-10 md:py-12">
 
-      <div className="max-w-4xl mx-auto">
+      <div ref={reportRef} className="max-w-5xl mx-auto">
 
         {/* Header */}
         <div className="text-center mb-12">
@@ -138,7 +169,7 @@ function Results() {
             Audit Completed
           </p>
 
-          <h1 className="text-6xl font-bold mb-4">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
             Save ${auditData?.savings}/mo
           </h1>
 
@@ -150,7 +181,7 @@ function Results() {
         {/* Main Card */}
         <div className="bg-zinc-900 border border-white/10 rounded-3xl p-8 mb-8">
 
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
 
             <div>
               <p className="text-gray-400 mb-2">
@@ -213,7 +244,7 @@ function Results() {
             Get Full Audit Report
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
 
             <input
               type="email"
@@ -253,9 +284,9 @@ function Results() {
         </div>
 
         {/* Stats */}
-        <div className="grid md:grid-cols-2 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 mt-10">
 
-          <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6">
+          <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
             <p className="text-gray-400 mb-2">
               Monthly Savings
             </p>
@@ -278,31 +309,26 @@ function Results() {
         </div>
 
         {/* CTA */}
-        <div className="text-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
 
-          <button className="bg-white text-black px-8 py-4 rounded-2xl font-semibold hover:scale-105 transition">
-            Email Full Report
+          <button
+            onClick={downloadPDF}
+            className="bg-white text-black px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition"
+          >
+            Download PDF Report
           </button>
 
-          <div className="mt-5">
-            <Link
-              to="/audit"
-              className="text-gray-500 hover:text-white transition"
-            >
-              Run another audit
-            </Link>
-          </div>
-        </div>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href)
+              alert("Link copied!")
+            }}
+            className="bg-zinc-800 border border-white/10 px-6 py-3 rounded-2xl hover:bg-zinc-700 transition"
+          >
+            Copy Share Link
+          </button>
 
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(window.location.href)
-            alert("Link copied!")
-          }}
-          className="bg-zinc-800 border border-white/10 px-6 py-3 rounded-xl"
-        >
-          Copy Share Link
-        </button>
+        </div>
 
       </div>
     </div>
