@@ -218,6 +218,50 @@ function Results() {
             <p className="text-gray-300">{auditData?.reason}</p>
           </div>
 
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+
+            <div className="bg-black border border-white/10 rounded-2xl p-5">
+              <p className="text-gray-400 text-sm mb-2">
+                Optimization Score
+              </p>
+
+              <h2 className="text-3xl font-bold">
+                {auditData?.optimization_score}/100
+              </h2>
+            </div>
+
+            <div className="bg-black border border-white/10 rounded-2xl p-5">
+              <p className="text-gray-400 text-sm mb-2">
+                Overspending
+              </p>
+
+              <h2 className="text-3xl font-bold text-red-400">
+                {auditData?.overspending_percent}%
+              </h2>
+            </div>
+
+            <div className="bg-black border border-white/10 rounded-2xl p-5">
+              <p className="text-gray-400 text-sm mb-2">
+                Confidence
+              </p>
+
+              <h2 className="text-3xl font-bold">
+                {auditData?.confidence}
+              </h2>
+            </div>
+
+            <div className="bg-black border border-white/10 rounded-2xl p-5">
+              <p className="text-gray-400 text-sm mb-2">
+                Risk Level
+              </p>
+
+              <h2 className="text-3xl font-bold text-yellow-400">
+                {auditData?.risk_level}
+              </h2>
+            </div>
+
+          </div>
+
         </div>
 
         <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 mt-8">

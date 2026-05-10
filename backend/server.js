@@ -31,17 +31,27 @@ app.post("/generate-summary", async (req, res) => {
     } = req.body
 
     const prompt = `
-    Generate a professional 100-word AI spend audit summary.
+You are an AI infrastructure cost optimization consultant.
 
-    Tool: ${tool}
-    Current Plan: ${plan}
-    Seats: ${seats}
-    Team Size: ${teamSize}
-    Recommendation: ${recommendation}
-    Monthly Savings: $${savings}
+Generate a personalized AI spend audit summary for a company.
 
-    Keep the tone professional and concise.
-    `
+Audit Details:
+- Tool: ${tool}
+- Current Plan: ${plan}
+- Seats: ${seats}
+- Team Size: ${teamSize}
+- Recommendation: ${recommendation}
+- Estimated Monthly Savings: $${savings}
+
+Requirements:
+- Keep response between 80-120 words
+- Mention whether the organization may be overspending
+- Explain WHY the recommendation makes sense
+- Mention operational efficiency or scaling considerations
+- Keep tone modern, strategic, and business-focused
+- Avoid repeating generic phrases
+- Make each summary feel personalized to the audit data
+`
 
     const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",

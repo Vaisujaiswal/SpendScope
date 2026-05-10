@@ -65,10 +65,16 @@ function Audit() {
           plan: formData.plan,
           seats: Number(formData.seats),
           team_size: Number(formData.teamSize),
+
           recommendation: result.recommendation,
           savings: result.savings,
           annual_savings: result.annualSavings,
           reason: result.reason,
+
+          optimization_score: result.optimizationScore,
+          overspending_percent: result.overspendingPercent,
+          confidence: result.confidence,
+          risk_level: result.riskLevel,
         },
       ])
       .select()
