@@ -2,6 +2,9 @@ import express from "express"
 import cors from "cors"
 import dotenv from "dotenv"
 import OpenAI from "openai"
+import { Resend } from "resend"
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 dotenv.config()
 
@@ -78,6 +81,24 @@ Your organization appears to be spending more on AI tooling than necessary for i
 `,
     })
   }
+})
+
+await resend.emails.send({
+  from: "onboarding@resend.dev",
+  to: leadData.email,
+  subject: "Your SpendScope Audit Report",
+  html: `
+    <h1>Audit Saved Successfully</h1>
+
+    <p>
+      Your AI spend audit has been captured successfully.
+    </p>
+
+    <p>
+      Estimated monthly savings:
+      <strong>$${savings}</strong>
+    </p>
+  `,
 })
 
 app.listen(5000, () => {

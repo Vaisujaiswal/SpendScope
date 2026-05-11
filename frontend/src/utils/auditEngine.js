@@ -1,16 +1,44 @@
+import { pricingData } from "../data/pricingData"
+
 export function generateAudit(data) {
 
   let recommendation = ""
   let savings = 0
   let reason = ""
+  let alternativeTool = ""
+  let creditSavings = 0
 
   let optimizationScore = 90
   let overspendingPercent = 5
   let confidence = "Medium"
   let riskLevel = "Low"
+  const monthlySpend = Number(data.spend)
+
+  if (
+    monthlySpend > 300 &&
+    data.teamSize < 10 &&
+    data.seats <= 5
+  ) {
+
+    recommendation =
+      "Your AI infrastructure costs appear unusually high for your current team size."
+
+    savings = Math.floor(monthlySpend * 0.35)
+
+    creditSavings =
+  Math.floor(savings * 0.4)
+
+    reason =
+      "Smaller teams are often able to achieve similar productivity using lower-tier AI plans and shared infrastructure strategies."
+
+    optimizationScore = 58
+    overspendingPercent = 35
+    confidence = "High"
+    riskLevel = "High"
+  }
 
   // ChatGPT Logic
-  if (
+  else if (
     data.tool === "ChatGPT" &&
     data.plan === "Enterprise" &&
     data.seats <= 5
@@ -18,7 +46,18 @@ export function generateAudit(data) {
 
     recommendation = "Switch to ChatGPT Team"
 
-    savings = (60 - 30) * data.seats
+    const currentCost =
+      pricingData.ChatGPT.Enterprise
+
+    const recommendedCost =
+      pricingData.ChatGPT.Team
+
+    savings =
+      (currentCost - recommendedCost)
+      * data.seats
+
+      creditSavings =
+  Math.floor(savings * 0.4)
 
     reason =
       "Enterprise plans are typically better suited for larger organizations with advanced compliance and admin requirements."
@@ -38,7 +77,21 @@ export function generateAudit(data) {
 
     recommendation = "Downgrade to Cursor Pro"
 
-    savings = (40 - 20) * data.seats
+    alternativeTool =
+      "Claude Pro or ChatGPT Team may provide similar productivity for writing-focused workflows at lower cost."
+
+    const currentCost =
+      pricingData.Cursor.Business
+
+    const recommendedCost =
+      pricingData.Cursor.Pro
+
+    savings =
+      (currentCost - recommendedCost)
+      * data.seats
+
+      creditSavings =
+  Math.floor(savings * 0.4)
 
     reason =
       "Business collaboration features may be unnecessary for smaller development teams."
@@ -58,7 +111,18 @@ export function generateAudit(data) {
 
     recommendation = "Switch to Claude Team"
 
-    savings = (75 - 35) * data.seats
+    const currentCost =
+      pricingData.Claude.Enterprise
+
+    const recommendedCost =
+      pricingData.Claude.Team
+
+    savings =
+      (currentCost - recommendedCost)
+      * data.seats
+
+      creditSavings =
+  Math.floor(savings * 0.4)
 
     reason =
       "Your team size may not currently require enterprise-level operational overhead."
@@ -78,7 +142,18 @@ export function generateAudit(data) {
 
     recommendation = "Use Copilot Individual"
 
-    savings = 9
+    const currentCost =
+      pricingData.Copilot.Business
+
+    const recommendedCost =
+      pricingData.Copilot.Individual
+
+    savings =
+      (currentCost - recommendedCost)
+      * data.seats
+
+      creditSavings =
+  Math.floor(savings * 0.4)
 
     reason =
       "Single-user workflows are generally more cost-efficient on individual plans."
@@ -98,7 +173,18 @@ export function generateAudit(data) {
 
     recommendation = "Evaluate Gemini Business"
 
-    savings = 25 * data.seats
+    const currentCost =
+      pricingData.Gemini.Ultra
+
+    const recommendedCost =
+      pricingData.Gemini.Pro
+
+    savings =
+      (currentCost - recommendedCost)
+      * data.seats
+
+      creditSavings =
+  Math.floor(savings * 0.4)
 
     reason =
       "Enterprise functionality may exceed the operational requirements of smaller teams."
@@ -116,6 +202,9 @@ export function generateAudit(data) {
       "Your current setup appears reasonably optimized"
 
     savings = 0
+
+    creditSavings =
+  Math.floor(savings * 0.4)
 
     reason =
       "Based on your current usage profile, no major cost inefficiencies were detected."
@@ -136,5 +225,7 @@ export function generateAudit(data) {
     overspendingPercent,
     confidence,
     riskLevel,
+    alternativeTool,
+    creditSavings
   }
 }

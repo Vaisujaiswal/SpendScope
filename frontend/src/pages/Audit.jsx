@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { generateAudit } from "../utils/auditEngine"
 import { toolPlans } from "../data/toolPlans"
 import { supabase } from "../services/supabase"
+import { Loader2 } from "lucide-react"
 
 
 function Audit() {
@@ -36,15 +37,35 @@ function Audit() {
   }, [formData])
 
   const handleChange = (e) => {
+
+    const { name, value } = e.target
+
+    if (name === "tool") {
+
+      setFormData({
+        ...formData,
+        tool: value,
+        plan: "",
+      })
+
+      return
+    }
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     })
   }
 
   const handleSubmit = async () => {
 
-    if (!formData.plan || !formData.seats) {
+    if (
+      !formData.plan ||
+      !formData.seats ||
+      !formData.spend ||
+      !formData.teamSize
+    ) {
+
       alert("Please complete all required fields")
       return
     }
@@ -63,6 +84,9 @@ function Audit() {
         {
           tool: formData.tool,
           plan: formData.plan,
+
+          monthly_spend: Number(formData.spend),
+
           seats: Number(formData.seats),
           team_size: Number(formData.teamSize),
 
@@ -124,6 +148,9 @@ function Audit() {
               <option>Cursor</option>
               <option>Copilot</option>
               <option>Gemini</option>
+              <option>Anthropic API</option>
+              <option>OpenAI API</option>
+              <option>Windsurf</option>
             </select>
           </div>
 
@@ -220,9 +247,16 @@ function Audit() {
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="w-full bg-white text-black py-3 rounded-xl font-semibold"
+            className="w-full bg-white text-black py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
           >
-            {submitting ? "Generating..." : "Generate Audit"}
+            {submitting ? (
+              <>
+                <Loader2 className="animate-spin w-5 h-5" />
+                Generating Audit...
+              </>
+            ) : (
+              "Generate Audit"
+            )}
           </button>
 
         </div>

@@ -11,6 +11,7 @@ function Results() {
   const [loading, setLoading] = useState(true)
   const [auditData, setAuditData] = useState(null)
   const reportRef = useRef()
+  const [saved, setSaved] = useState(false)
 
   const [leadData, setLeadData] = useState({
     email: "",
@@ -32,7 +33,10 @@ function Results() {
     const pageHeight = 295
 
     const imgHeight =
-      (canvas.height * imgWidth) / canvas.width
+      Math.min(
+        (canvas.height * imgWidth) / canvas.width,
+        280
+      )
 
     pdf.addImage(
       data,
@@ -67,12 +71,11 @@ function Results() {
         },
       ])
 
-    if (error) {
-      console.log(error)
+    if (!leadData.email) {
+      alert("Please enter your email")
       return
     }
-
-    alert("Lead saved successfully!")
+    setSaved(true)
   }
 
   useEffect(() => {
@@ -98,6 +101,8 @@ function Results() {
   }, [id])
 
   useEffect(() => {
+
+    if (!auditData) return
 
     async function fetchSummary() {
       try {
@@ -147,7 +152,7 @@ function Results() {
 
           <Link
             to="/audit"
-            className="bg-white text-black px-6 py-3 rounded-xl font-semibold"
+            className="bg-white text-black px-6 py-3 rounded-2xl font-semibold"
           >
             Run New Audit
           </Link>
@@ -163,23 +168,42 @@ function Results() {
       <div ref={reportRef} className="max-w-5xl mx-auto">
 
         {/* Header */}
-        <div className="text-center mb-12">
+        {auditData?.savings > 100 ? (
 
-          <p className="text-green-400 font-medium mb-3">
-            Audit Completed
-          </p>
+          <>
+            <p className="text-green-400 font-medium mb-2">
+              Want to save or share this audit?
+            </p>
 
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-            Save ${auditData?.savings}/mo
-          </h1>
+            <h2 className="text-3xl font-bold mb-3">
+              Capture Your Audit Report
+            </h2>
 
-          <p className="text-gray-400 text-lg">
-            Potential annual savings of ${auditData?.annual_savings}
-          </p>
-        </div>
+            <p className="text-gray-400 leading-7 mb-8">
+              Enter your work email to save this audit and receive future optimization insights.
+            </p>
+          </>
+
+        ) : (
+
+          <>
+            <p className="text-blue-400 font-medium mb-2">
+              Stay Updated
+            </p>
+
+            <h2 className="text-3xl font-bold mb-3">
+              Get notified about future optimization opportunities
+            </h2>
+
+            <p className="text-gray-400 leading-7 mb-8">
+              Your stack looks healthy right now, but AI pricing changes quickly. Enter your email to receive future optimization alerts.
+            </p>
+          </>
+
+        )}
 
         {/* Main Card */}
-        <div className="bg-zinc-900 border border-white/10 rounded-3xl p-8 mb-8">
+        <div className="bg-zinc-900 border border-white/10 rounded-3xl p-6 md:p-8 mb-8">
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
 
@@ -193,7 +217,7 @@ function Results() {
               </h2>
             </div>
 
-            <div className="text-right">
+            <div className="md:text-right">
               <p className="text-gray-400 mb-2">
                 Current Plan
               </p>
@@ -218,14 +242,14 @@ function Results() {
             <p className="text-gray-300">{auditData?.reason}</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-8">
 
             <div className="bg-black border border-white/10 rounded-2xl p-5">
               <p className="text-gray-400 text-sm mb-2">
                 Optimization Score
               </p>
 
-              <h2 className="text-3xl font-bold">
+              <h2 className="text-2xl md:text-3xl font-bold">
                 {auditData?.optimization_score}/100
               </h2>
             </div>
@@ -235,7 +259,7 @@ function Results() {
                 Overspending
               </p>
 
-              <h2 className="text-3xl font-bold text-red-400">
+              <h2 className="text-2xl md:text-3xl font-bold text-red-400">
                 {auditData?.overspending_percent}%
               </h2>
             </div>
@@ -245,7 +269,7 @@ function Results() {
                 Confidence
               </p>
 
-              <h2 className="text-3xl font-bold">
+              <h2 className="text-2xl md:text-3xl font-bold">
                 {auditData?.confidence}
               </h2>
             </div>
@@ -255,9 +279,98 @@ function Results() {
                 Risk Level
               </p>
 
-              <h2 className="text-3xl font-bold text-yellow-400">
+              <h2 className="text-2xl md:text-3xl font-bold text-yellow-400">
                 {auditData?.risk_level}
               </h2>
+            </div>
+
+          </div>
+
+          <div className="bg-zinc-900/80 border border-white/10 rounded-[32px] p-6 md:p-8 mt-10">
+
+            <p className="text-gray-400 mb-3">
+              Industry Benchmark
+            </p>
+
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              AI Spend Comparison
+            </h2>
+
+            <p className="text-gray-300 leading-8">
+
+              Compared to startups with similar team sizes and AI usage patterns, your current tooling spend appears approximately
+
+              <span className="text-green-400 font-semibold">
+                {" "}{auditData?.overspending_percent}% higher{" "}
+              </span>
+
+              than estimated operational benchmarks.
+
+            </p>
+
+          </div>
+
+          {auditData?.alternative_tool && (
+
+            <div className="bg-zinc-900 border border-white/10 rounded-3xl p-6 mt-8">
+
+              <p className="text-gray-400 mb-3">
+                Suggested Alternative
+              </p>
+
+              <p className="text-gray-300 leading-7">
+                {auditData.alternative_tool}
+              </p>
+
+            </div>
+
+          )}
+
+          {auditData?.credit_savings > 0 && (
+
+            <div className="bg-green-500/10 border border-green-500/20 rounded-3xl p-6 mt-8">
+
+              <p className="text-green-400 font-medium mb-3">
+                Marketplace Credit Opportunity
+              </p>
+
+              <p className="text-gray-300 leading-7">
+                Your organization may reduce AI infrastructure costs further through discounted infrastructure credits.
+
+                Estimated additional savings:
+                <span className="text-green-400 font-semibold">
+                  {" "} ${auditData.credit_savings}/month
+                </span>
+              </p>
+
+            </div>
+
+          )}
+
+          <div className="mt-5 border-t border-white/10 pt-5">
+
+            <div className="flex items-center justify-between mb-3">
+
+              <p className="text-gray-400">
+                Estimated Retail Spend
+              </p>
+
+              <p className="text-white font-semibold">
+                ${auditData?.monthly_spend}/mo
+              </p>
+
+            </div>
+
+            <div className="flex items-center justify-between">
+
+              <p className="text-gray-400">
+                Estimated Marketplace Pricing
+              </p>
+
+              <p className="text-green-400 font-semibold">
+                ${auditData?.monthly_spend - auditData?.credit_savings}/mo
+              </p>
+
             </div>
 
           </div>
@@ -282,11 +395,61 @@ function Results() {
 
         </div>
 
+        {auditData?.savings > 100 && (
+
+          <div className="bg-green-500/10 border border-green-500/20 rounded-[32px] p-6 md:p-8 mt-10">
+
+            <p className="text-green-400 font-medium mb-3">
+              Significant Savings Opportunity
+            </p>
+
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 leading-tight">
+              Your organization may be overspending on AI infrastructure.
+            </h2>
+
+            <p className="text-gray-300 leading-7 mb-6">
+              Based on your audit results, your current AI tooling setup may qualify for substantial pricing optimization opportunities through secondary AI infrastructure marketplaces.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+
+              <a
+                href="https://credexmarketplace.com"
+                target="_blank"
+                className="bg-white text-black px-6 py-3 rounded-2xl font-semibold text-center"
+              >
+                Book Credex Consultation
+              </a>
+
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href)
+                  alert("Audit link copied!")
+                }}
+                className="border border-white/10 px-6 py-3 rounded-2xl hover:bg-white/5 transition"
+              >
+                Share Audit
+              </button>
+
+            </div>
+
+          </div>
+
+        )}
+
         <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 mt-8">
 
-          <h2 className="text-2xl font-bold mb-6">
-            Get Full Audit Report
+          <p className="text-green-400 font-medium mb-2">
+            Want to save or share this audit?
+          </p>
+
+          <h2 className="text-3xl font-bold mb-3">
+            Capture Your Audit Report
           </h2>
+
+          <p className="text-gray-400 leading-7 mb-8">
+            Enter your work email to save this audit report and receive future optimization insights.
+          </p>
 
           <div className="space-y-5">
 
@@ -296,7 +459,7 @@ function Results() {
               value={leadData.email}
               onChange={handleLeadChange}
               placeholder="Email address"
-              className="w-full bg-black border border-white/10 rounded-xl p-3"
+              className="w-full bg-black border border-white/10 rounded-2xl p-3"
             />
 
             <input
@@ -305,7 +468,7 @@ function Results() {
               value={leadData.company}
               onChange={handleLeadChange}
               placeholder="Company name (optional)"
-              className="w-full bg-black border border-white/10 rounded-xl p-3"
+              className="w-full bg-black border border-white/10 rounded-2xl p-3"
             />
 
             <input
@@ -314,23 +477,29 @@ function Results() {
               value={leadData.role}
               onChange={handleLeadChange}
               placeholder="Role (optional)"
-              className="w-full bg-black border border-white/10 rounded-xl p-3"
+              className="w-full bg-black border border-white/10 rounded-2xl p-3"
             />
 
             <button
               onClick={saveLead}
-              className="w-full bg-white text-black py-3 rounded-xl font-semibold"
+              className="w-full bg-white text-black py-3 rounded-2xl font-semibold"
             >
               Save Report
             </button>
+
+            {saved && (
+              <div className="bg-green-500/10 border border-green-500/20 text-green-400 rounded-2xl p-4 mt-4">
+                Report saved successfully.
+              </div>
+            )}
 
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 mt-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 mt-10">
 
-          <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
+          <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6">
             <p className="text-gray-400 mb-2">
               Monthly Savings
             </p>
@@ -347,6 +516,16 @@ function Results() {
 
             <h2 className="text-4xl font-bold text-green-400">
               ${auditData?.annual_savings}
+            </h2>
+          </div>
+
+          <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6">
+            <p className="text-gray-400 mb-2">
+              Current Monthly Spend
+            </p>
+
+            <h2 className="text-4xl font-bold">
+              ${auditData?.monthly_spend}
             </h2>
           </div>
 
