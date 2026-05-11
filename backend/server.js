@@ -4,9 +4,9 @@ import dotenv from "dotenv"
 import OpenAI from "openai"
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 dotenv.config()
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 const app = express()
 
@@ -83,23 +83,72 @@ Your organization appears to be spending more on AI tooling than necessary for i
   }
 })
 
-await resend.emails.send({
-  from: "onboarding@resend.dev",
-  to: leadData.email,
-  subject: "Your SpendScope Audit Report",
-  html: `
-    <h1>Audit Saved Successfully</h1>
 
-    <p>
-      Your AI spend audit has been captured successfully.
-    </p>
+app.post("/send-email", async (req, res) => {
 
-    <p>
-      Estimated monthly savings:
-      <strong>$${savings}</strong>
-    </p>
-  `,
+  try {
+
+    const {
+      email,
+      savings,
+      recommendation,
+    } = req.body
+
+    await resend.emails.send({
+
+      from: "onboarding@resend.dev",
+
+      to: email,
+
+      subject: "Your SpendScope Audit Report",
+
+      html: `
+        <div style="font-family: Arial; padding: 20px;">
+
+          <h1>
+            Your AI Spend Audit Report
+          </h1>
+
+          <p>
+            Your audit has been successfully saved.
+          </p>
+
+          <p>
+            Estimated Monthly Savings:
+            <strong>
+              $${savings}
+            </strong>
+          </p>
+
+          <p>
+            Recommendation:
+            <strong>
+              ${recommendation}
+            </strong>
+          </p>
+
+          <p>
+            Thanks for using SpendScope.
+          </p>
+
+        </div>
+      `,
+    })
+
+    res.json({
+      success: true,
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+    })
+  }
 })
+
 
 app.listen(5000, () => {
   console.log("Server running on port 5000")

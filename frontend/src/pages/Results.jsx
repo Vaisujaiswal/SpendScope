@@ -71,6 +71,16 @@ function Results() {
         },
       ])
 
+    await axios.post(
+      "http://localhost:5000/send-email",
+      {
+        email: leadData.email,
+        savings: auditData?.savings,
+        recommendation:
+          auditData?.recommendation,
+      }
+    )
+
     if (!leadData.email) {
       alert("Please enter your email")
       return
