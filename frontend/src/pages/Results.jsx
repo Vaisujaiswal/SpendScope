@@ -59,6 +59,11 @@ function Results() {
 
   const saveLead = async () => {
 
+    if (!leadData.email) {
+      alert("Please enter your email")
+      return
+    }
+
     const { error } = await supabase
       .from("leads")
       .insert([
@@ -71,20 +76,29 @@ function Results() {
         },
       ])
 
-    await axios.post(
-      "http://localhost:5000/send-email",
-      {
-        email: leadData.email,
-        savings: auditData?.savings,
-        recommendation:
-          auditData?.recommendation,
-      }
-    )
-
-    if (!leadData.email) {
-      alert("Please enter your email")
+    if (error) {
+      console.log(error)
       return
     }
+
+    try {
+
+      await axios.post(
+        "https://spendscope-u9ag.onrender.com/send-email",
+        {
+          email: leadData.email,
+          savings: auditData?.savings,
+          recommendation:
+            auditData?.recommendation,
+        }
+      )
+
+    } catch (error) {
+
+      console.log(error)
+
+    }
+
     setSaved(true)
   }
 
