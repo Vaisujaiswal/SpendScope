@@ -192,7 +192,7 @@ function Results() {
       <div ref={reportRef} className="max-w-5xl mx-auto">
 
         {/* Header */}
-        {auditData?.savings > 100 ? (
+        {auditData?.savings >= 500 ? (
 
           <>
             <p className="text-green-400 font-medium mb-2">

@@ -116,7 +116,10 @@ app.post("/send-email", async (req, res) => {
           <p>
             Estimated Monthly Savings:
             <strong>
-              $${savings}
+              ${savings >= 500
+          ? "A Credex optimization specialist may reach out regarding additional infrastructure savings opportunities."
+          : ""
+        }
             </strong>
           </p>
 
